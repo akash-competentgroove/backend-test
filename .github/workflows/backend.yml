@@ -3,7 +3,7 @@ name: Deploy to Localhost
 on:
   push:
     branches:
-      - main  # Trigger when pushing to the main branch
+      - main
 
 jobs:
   deploy:
@@ -13,25 +13,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 1: Install dependencies first
-      - name: Install dependencies
+      # Step 1: Install dependencies
+      - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
-      # Step 2: Create App Archive (exclude node_modules)
-      - name: Create App Archive
-        run: tar --exclude='./node_modules' -czf backend-app.tar.gz .
-
-      # Step 3: Deploy the archive to Localhost
-      - name: Deploy to Localhost
-        uses: appleboy/scp-action@v0.1.4
+      # Step 2: Deploy to Localhost using rsync (bypassing tar)
+      - name: Deploy to Localhost via rsync
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "backend-app.tar.gz"
-          target: "/mnt/d/Devops/New-2024/demo/testing/github-actions"
+          script: |
+            rsync -av --exclude='./node_modules' ./ /mnt/d/Devops/New-2024/demo/testing/github-actions
 
-      # Step 4: Install dependencies and run app
+      # Step 3: Install dependencies and run app on server
       - name: Install dependencies and run app
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -40,7 +36,6 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /mnt/d/Devops/New-2024/demo/testing/github-actions
-            tar -xzf backend-app.tar.gz  # Extract the archive
-            npm install  # Install dependencies
-            node index.js  # Start the app with node command
+            npm install
+            node index.js
 
