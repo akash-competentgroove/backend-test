@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,14 +18,14 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies
+      - name: Rename env file
+        run: |
+          if [ -f env-cp ]; then mv env-cp .env; fi
+
+      - name: Install Dependencies
         run: npm install
 
-      - name: Rename env file
-        run: mv env-cp .env
+      - name: Run the Backend App
+        run: |
+          npm run start
 
-      - name: Upload backend folder
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-app
-          path: .
