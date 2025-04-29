@@ -13,11 +13,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 1: Archive the code into backend-app.tar.gz
-      - name: Create App Archive
-        run: tar -czf backend-app.tar.gz .
+      # Step 1: Install dependencies first to make sure node_modules is up to date
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
 
-      # Step 2: Deploy the archive to Localhost
+      # Step 2: Create App Archive after dependencies are installed
+      - name: Create App Archive
+        run: tar -czf backend-app.tar.gz . --exclude='./node_modules'
+
+      # Step 3: Deploy the archive to Localhost
       - name: Deploy to Localhost
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -27,7 +31,7 @@ jobs:
           source: "backend-app.tar.gz"
           target: "/mnt/d/Devops/New-2024/demo/testing/github-actions"
 
-      # Step 3: Install dependencies and start the app using node
+      # Step 4: Install dependencies and run app
       - name: Install dependencies and run app
         uses: appleboy/ssh-action@v1.0.0
         with:
